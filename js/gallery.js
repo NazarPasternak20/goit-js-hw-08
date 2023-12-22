@@ -1,3 +1,5 @@
+"use strict";
+
 const images = [
   {
     preview:
@@ -64,59 +66,52 @@ const images = [
   },
 ];
 
-const galleryContainer = document.querySelector(`.gallery`);
+const gallery = document.querySelector(".gallery");
 
-const galleryItems = images.reduce(
-  (html, galleryItem) =>
-    html +
+const instance = basicLightbox.create(
+  `<img class="large-image" src="" width="1112" height="640">`,
+  {
+    onShow: () => {
+      document.addEventListener("keydown", onRemoveListener);
+    },
+    onClose: () => {
+      document.removeEventListener("keydown", onRemoveListener);
+    },
+  }
+);
+
+function onRemoveListener(event) {
+  if (event.key === "Escape") {
+    instance.close();
+  }
+}
+
+gallery.innerHTML = images.reduce(
+  (acc, item) =>
+    acc +
     `<li class="gallery-item">
-        <a class="gallery-link" href="${galleryItem.original} download">
-          <img
-            class="gallery-image"
-            src="${galleryItem.preview}"
-            data-source="${galleryItem.original}"
-            alt="${galleryItem.description}"
-          />  
+        <a class="gallery-link" href="${item.original}">
+            <img 
+            class="gallery-image" 
+            src="${item.preview}" 
+            data-source="${item.original}" 
+            alt="${item.description}"
+            width="360"
+            height="200" />
         </a>
     </li>`,
   ""
 );
-galleryList.insertAdjacentHTML(`afterbegin`, galleryItems);
 
-const handleKeydown = (event) => {
-  if (event.key === "Escape") {
-    instance.close();
-    document.removeEventListener("keydown", handleKeydown);
-  }
-};
-
-document.addEventListener("keydown", handleKeydown);
-
-const handleClick = (event) => {
+gallery.addEventListener("click", (event) => {
   event.preventDefault();
+
   if (event.target.nodeName !== "IMG") {
     return;
   }
-  const link = event.target.dataset.source;
-  console.log(link);
 
-  const instance = basicLightBox.create(
-    `<div class="modal">
-      <img width="1400" height="900" src="${link}"
-    </div>`,
-    {
-      onShow: () => {
-        document.addEventListener("click", handleClick);
-      },
-      onClose: () => {
-        document.removeEventListener("click", handleClick);
-      },
-    }
-  );
+  const instanceImg = instance.element().querySelector(".large-image");
+  instanceImg.src = event.target.dataset.source;
+
   instance.show();
-};
-
-document.addEventListener("click", handleClick);
-document.removeEventListener("click", handleClick);
-
-
+});
